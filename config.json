@@ -1,0 +1,6 @@
+﻿{
+    "DefaultArchive":  "zip",
+    "Backend":  "transfer.sh",
+    "ClearScreen":  true,
+    "AutoCopyClipboard":  true
+}
