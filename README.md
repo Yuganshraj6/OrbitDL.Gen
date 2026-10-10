@@ -4,9 +4,11 @@ Here is the complete, production-ready README.md file for your OrbitDL.Gen repos
   <strong>Orbit Direct Download Link Generator</strong><br>
   <em>A fast, native terminal utility for Windows to host files and folders with instant direct download links.</em></p>
 <p align="center">
-  <img src="https://shields.io" alt="Platform" />
-  <img src="https://shields.io" alt="PowerShell" />
-  <img src="https://shields.io" alt="License" /></p>
+  <img src="https://shields.io_|_11-0078D6?style=flat-square&logo=windows" alt="Platform" />
+  <img src="https://shields.io+_|_7+-5391FE?style=flat-square&logo=powershell" alt="PowerShell" />
+  <img src="https://shields.io" alt="License" />
+</p>
+
 ---## ⚡ Overview
 **OrbitDL.Gen** is a lightweight, standalone command-line tool designed for PowerShell and Windows Terminal. It allows you to pipe files or full directories to secure cloud backends and generates clean direct download links instantly—bypassing preview pages, speed throttles, and ad walls.
 
