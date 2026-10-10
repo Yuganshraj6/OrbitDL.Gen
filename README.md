@@ -15,9 +15,24 @@
 
 ## ⚡ Overview
 
-**OrbitDL.Gen** is a lightweight, standalone command-line tool designed for PowerShell and Windows Terminal. It allows you to pipe files or full directories to secure cloud backends and generates clean direct download links instantly—bypassing preview pages, speed throttles, and ad walls.
+**OrbitDL.Gen** is a lightweight, standalone command-line tool designed for PowerShell and Windows Terminal. It allows you to pipe files or full directories to secure cloud backends and generates clean, direct download links instantly—bypassing preview pages, speed throttles, and ad walls.
 
 The tool includes directory auto-archiving, automatic clipboard integration, a 3-line stylized terminal dashboard, persistent settings, and an upload history logger.
+
+---
+
+## 💡 Practical Use Cases (VPS, Remote Servers & Automation)
+
+OrbitDL.Gen is built to streamline transferring assets between local machines and remote servers:
+
+- **Lightning-Fast VPS Transfers**: Need to move scripts, configs, datasets, or game server files to a remote Linux/Windows VPS? Upload with `odlg` and immediately pull it on your server with `wget` or `curl`:
+  ```bash
+  # Run this on your remote VPS / SSH terminal:
+  wget <pasted-orbit-link>
+  ```
+- **Headless & Script Friendly**: Pure direct download links mean tools like `curl`, `wget`, Docker containers, and CI/CD pipelines can grab your files directly without failing on web preview pages.
+- **Quick Backup Stashing**: Rapidly bundle a project directory into an archive (`.zip`, `.tar`, `.tar.gz`) and stash it with a single command before running server maintenance or script updates.
+- **No Complex SFTP/SCP Setup**: Avoid setting up FTP servers, SFTP keys, or port forwards just to transfer a few configuration files or binaries.
 
 ---
 
@@ -188,8 +203,8 @@ function Process-Upload ([string]$TargetPath) {
 
         if ($TempArchive -and (Test-Path $TempArchive)) { Remove-Item $TempArchive -Force }
         if ($Config.AutoCopyClipboard) { Set-Clipboard -Value $DirectUrl }
-        Log-History -Name $UploadFile.Name -Url $DirectUrl -Size "$SizeMB MB"
 
+        Log-History -Name $UploadFile.Name -Url $DirectUrl -Size "$SizeMB MB"
         Show-Banner
         Write-Host " [✓] UPLOAD SUCCESSFUL!" -ForegroundColor Green
         Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
@@ -223,7 +238,6 @@ while ($true) {
     Write-Host " [Q] Exit" -ForegroundColor Red
     Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
     $MenuSelection = Read-Host " Select an option [1-4, Q]"
-
     switch ($MenuSelection.ToUpper().Trim()) {
         "1" {
             Show-Banner
@@ -240,7 +254,6 @@ while ($true) {
     }
 }
 '@
-
 $CorePath = Join-Path $InstallDir "engine.ps1"
 Set-Content -Path $CorePath -Value $PSCoreContent -Encoding UTF8
 
@@ -249,7 +262,6 @@ $CmdTemplate = @"
 @echo off
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$CorePath" %*
 "@
-
 @("orbitdlgen.cmd", "orbitdl.cmd", "odlg.cmd") | ForEach-Object {
     Set-Content -Path (Join-Path $InstallDir $_) -Value $CmdTemplate -Encoding Ascii
 }
@@ -271,7 +283,7 @@ Write-Host " Installation complete! Restart terminal and type 'odlg' to run." -F
 You can use `odlg`, `orbitdl`, or `orbitdlgen` interchangeably:
 
 | Command | Action |
-| :--- | :--- |
+|---|---|
 | `odlg` | Opens the interactive visual dashboard menu |
 | `odlg <path>` | Instantly uploads a file or folder and copies the direct link |
 | `odlg -s` or `odlg --settings` | Opens the configuration settings menu |
@@ -282,17 +294,15 @@ You can use `odlg`, `orbitdl`, or `orbitdlgen` interchangeably:
 
 - **Upload a single file:**
   ```powershell
-  odlg document.pdf
+  odlg server.jar
   ```
-
 - **Upload a path with spaces (no quotes required):**
   ```powershell
-  odlg C:\Users\Username\Documents\My Project Files\video.mp4
+  odlg C:\Users\Username\Documents\VPS Backups\backup.tar.gz
   ```
-
-- **Upload an entire directory (auto-compresses):**
+- **Upload an entire directory (auto-compresses to .zip / .tar / .tar.gz):**
   ```powershell
-  odlg C:\Users\Username\Desktop\ProjectFolder
+  odlg C:\Users\Username\Desktop\MyServerConfig
   ```
 
 ---
