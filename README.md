@@ -1,26 +1,42 @@
-Here is the complete, production-ready README.md file for your OrbitDL.Gen repository, formatted with both the one-line irm installer option and the direct codeblock installation method:
+# OrbitDL.Gen
 
-# OrbitDL.Gen<p align="center">
-  <strong>Orbit Direct Download Link Generator</strong><br>
-  <em>A fast, native terminal utility for Windows to host files and folders with instant direct download links.</em></p>
 <p align="center">
-  <img src="https://shields.io_|_11-0078D6?style=flat-square&logo=windows" alt="Platform" />
-  <img src="https://shields.io+_|_7+-5391FE?style=flat-square&logo=powershell" alt="PowerShell" />
-  <img src="https://shields.io" alt="License" />
+  <strong>Orbit Direct Download Link Generator</strong><br>
+  <em>A fast, native terminal utility for Windows to host files and folders with instant direct download links.</em>
 </p>
 
----## ⚡ Overview
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Windows_10_|_11-0078D6?style=flat-square&logo=windows" alt="Platform" />
+  <img src="https://img.shields.io/badge/PowerShell-5.1+_|_7+-5391FE?style=flat-square&logo=powershell" alt="PowerShell" />
+  <img src="https://img.shields.io/badge/License-MIT-brightgreen?style=flat-square" alt="License" />
+</p>
+
+---
+
+## ⚡ Overview
+
 **OrbitDL.Gen** is a lightweight, standalone command-line tool designed for PowerShell and Windows Terminal. It allows you to pipe files or full directories to secure cloud backends and generates clean direct download links instantly—bypassing preview pages, speed throttles, and ad walls.
 
 The tool includes directory auto-archiving, automatic clipboard integration, a 3-line stylized terminal dashboard, persistent settings, and an upload history logger.
----## 📥 Installation
+
+---
+
+## 📥 Installation
+
 Choose **one** of the two installation methods below:
+
 ### Option 1: One-Line Web Installer (Recommended)
+
 Open **PowerShell as an Administrator** and run:
+
 ```powershell
 irm https://raw.githubusercontent.com/Yuganshraj6/OrbitDL.Gen/main/Install-OrbitDLGen.ps1 | iex
 ```
----### Option 2: Standalone Codeblock (Manual Setup)
+
+---
+
+### Option 2: Standalone Codeblock (Manual Setup)
+
 If you prefer not to pull remote scripts, open **PowerShell as an Administrator**, paste the following block, and press **Enter**:
 
 ```powershell
@@ -167,130 +183,157 @@ function Process-Upload ([string]$TargetPath) {
             $DirectUrl = (curl.exe -F "file=@$($UploadFile.FullName)" https://0x0.st).Trim()
         } else {
             $EncodedName = [System.Uri]::EscapeDataString($UploadFile.Name)
-            $DirectUrl = (Invoke-RestMethod -Uri "https://transfer.sh" -Method Put -InFile $UploadFile.FullName).Trim()
+            $DirectUrl = (Invoke-RestMethod -Uri "https://transfer.sh/$EncodedName" -Method Put -InFile $UploadFile.FullName).Trim()
         }
 
         if ($TempArchive -and (Test-Path $TempArchive)) { Remove-Item $TempArchive -Force }
         if ($Config.AutoCopyClipboard) { Set-Clipboard -Value $DirectUrl }
+        Log-History -Name $UploadFile.Name -Url $DirectUrl -Size "$SizeMB MB"
 
-Log-History -Name $UploadFile.Name -Url $DirectUrl -Size "$SizeMB MB"
-Show-Banner
-Write-Host " [✓] UPLOAD SUCCESSFUL!" -ForegroundColor Green
-Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
-Write-Host " [▶] Direct Download Link:" -ForegroundColor Yellow
-Write-Host " $DirectUrl" -ForegroundColor Cyan
-Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
-if ($Config.AutoCopyClipboard) { Write-Host " [] Direct download link copied to your clipboard!" -ForegroundColor White }
-Write-Host " [] Logged to local upload history." -ForegroundColor Gray
-Write-Host "================================================================================" -ForegroundColor Cyan
-} catch {
-if ($TempArchive -and (Test-Path $TempArchive)) { Remove-Item $TempArchive -Force }
-Write-Host " [!] Upload Failed: $($_.Exception.Message)" -ForegroundColor Red
+        Show-Banner
+        Write-Host " [✓] UPLOAD SUCCESSFUL!" -ForegroundColor Green
+        Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
+        Write-Host " [▶] Direct Download Link:" -ForegroundColor Yellow
+        Write-Host "     $DirectUrl" -ForegroundColor Cyan
+        Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
+        if ($Config.AutoCopyClipboard) { Write-Host " [*] Direct download link copied to your clipboard!" -ForegroundColor White }
+        Write-Host " [*] Logged to local upload history." -ForegroundColor Gray
+        Write-Host "================================================================================" -ForegroundColor Cyan
+    } catch {
+        if ($TempArchive -and (Test-Path $TempArchive)) { Remove-Item $TempArchive -Force }
+        Write-Host " [!] Upload Failed: $($_.Exception.Message)" -ForegroundColor Red
+    }
 }
-}
+
 if ($PathArgs.Count -gt 0) {
-$ArgString = ($PathArgs -join ' ').Trim()
-if ($ArgString -in @("--help", "-h", "/?", "-help")) { Show-HelpGuide; exit }
-if ($ArgString -in @("--settings", "-s")) { Show-SettingsView; exit }
-if ($ArgString -in @("--history")) { Show-HistoryView; exit }
-Process-Upload -TargetPath $ArgString.Trim('"').Trim("'")
-exit
+    $ArgString = ($PathArgs -join ' ').Trim()
+    if ($ArgString -in @("--help", "-h", "/?", "-help")) { Show-HelpGuide; exit }
+    if ($ArgString -in @("--settings", "-s")) { Show-SettingsView; exit }
+    if ($ArgString -in @("--history")) { Show-HistoryView; exit }
+    Process-Upload -TargetPath $ArgString.Trim('"').Trim("'")
+    exit
 }
+
 while ($true) {
-Show-Banner
-Write-Host " [1] Upload a File or Folder" -ForegroundColor Green
-Write-Host " [2] View Upload History" -ForegroundColor Green
-Write-Host " [3] Configure Settings" -ForegroundColor Green
-Write-Host " [4] View User Guide" -ForegroundColor Green
-Write-Host " [Q] Exit" -ForegroundColor Red
-Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
-$MenuSelection = Read-Host " Select an option [1-4, Q]"
-switch ($MenuSelection.ToUpper().Trim()) {
-"1" {
-Show-Banner
-$InputPath = Read-Host " Enter or drag-and-drop path (no quotes needed)"
-if (-not [string]::IsNullOrWhiteSpace($InputPath)) {
-Process-Upload -TargetPath $InputPath.Trim().Trim('"').Trim("'")
-Read-Host " Press Enter to continue..."
-}
-}
-"2" { Show-HistoryView }
-"3" { Show-SettingsView }
-"4" { Show-HelpGuide; Read-Host " Press Enter to continue..." }
-"Q" { Show-Banner; Write-Host " Goodbye!" -ForegroundColor Yellow; break }
-}
+    Show-Banner
+    Write-Host " [1] Upload a File or Folder" -ForegroundColor Green
+    Write-Host " [2] View Upload History" -ForegroundColor Green
+    Write-Host " [3] Configure Settings" -ForegroundColor Green
+    Write-Host " [4] View User Guide" -ForegroundColor Green
+    Write-Host " [Q] Exit" -ForegroundColor Red
+    Write-Host "--------------------------------------------------------------------------------" -ForegroundColor DarkGray
+    $MenuSelection = Read-Host " Select an option [1-4, Q]"
+
+    switch ($MenuSelection.ToUpper().Trim()) {
+        "1" {
+            Show-Banner
+            $InputPath = Read-Host " Enter or drag-and-drop path (no quotes needed)"
+            if (-not [string]::IsNullOrWhiteSpace($InputPath)) {
+                Process-Upload -TargetPath $InputPath.Trim().Trim('"').Trim("'")
+                Read-Host " Press Enter to continue..."
+            }
+        }
+        "2" { Show-HistoryView }
+        "3" { Show-SettingsView }
+        "4" { Show-HelpGuide; Read-Host " Press Enter to continue..." }
+        "Q" { Show-Banner; Write-Host " Goodbye!" -ForegroundColor Yellow; break }
+    }
 }
 '@
+
 $CorePath = Join-Path $InstallDir "engine.ps1"
 Set-Content -Path $CorePath -Value $PSCoreContent -Encoding UTF8
-## 3. Create command launcher wrappers
+
+# 3. Create command launcher wrappers
 $CmdTemplate = @"
 @echo off
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$CorePath" %*
 "@
+
 @("orbitdlgen.cmd", "orbitdl.cmd", "odlg.cmd") | ForEach-Object {
-Set-Content -Path (Join-Path $InstallDir $_) -Value $CmdTemplate -Encoding Ascii
+    Set-Content -Path (Join-Path $InstallDir $_) -Value $CmdTemplate -Encoding Ascii
 }
-## 4. Add to User PATH
+
+# 4. Add to User PATH
 $UserPath = [Environment]::GetEnvironmentVariable("PATH", "User")
-if ($UserPath -notlike "OrbitDL.Gen") {
-$NewPath = ($UserPath.TrimEnd(';') + ";" + $InstallDir).Replace(";;", ";")
-[Environment]::SetEnvironmentVariable("PATH", $NewPath, "User")
-Write-Host "[✓] OrbitDL.Gen registered to User PATH." -ForegroundColor Green
+if ($UserPath -notlike "*OrbitDL.Gen*") {
+    $NewPath = ($UserPath.TrimEnd(';') + ";" + $InstallDir).Replace(";;", ";")
+    [Environment]::SetEnvironmentVariable("PATH", $NewPath, "User")
+    Write-Host "[✓] OrbitDL.Gen registered to User PATH." -ForegroundColor Green
 }
 Write-Host " Installation complete! Restart terminal and type 'odlg' to run." -ForegroundColor Cyan
 ```
-------------------------------
+
+---
+
 ## 💻 Commands & Usage
-You can use odlg, orbitdl, or orbitdlgen interchangeably:
+
+You can use `odlg`, `orbitdl`, or `orbitdlgen` interchangeably:
 
 | Command | Action |
-|---|---|
-| odlg | Opens the interactive visual dashboard menu |
-| odlg <path> | Instantly uploads a file or folder and copies the direct link |
-| odlg -s or odlg --settings | Opens the configuration settings menu |
-| odlg --history | Displays your previous uploads and links |
-| odlg -h or odlg --help | Shows the quick help manual |
+| :--- | :--- |
+| `odlg` | Opens the interactive visual dashboard menu |
+| `odlg <path>` | Instantly uploads a file or folder and copies the direct link |
+| `odlg -s` or `odlg --settings` | Opens the configuration settings menu |
+| `odlg --history` | Displays your previous uploads and links |
+| `odlg -h` or `odlg --help` | Shows the quick help manual |
 
-## Examples
+### Examples
 
-* Upload a single file:
-powershell odlg document.pdf 
-* Upload a path with spaces (no quotes required):
-powershell odlg C:\Users\Username\Documents\My Project Files\video.mp4 
-* Upload an entire directory (auto-compresses):
-powershell odlg C:\Users\Username\Desktop\ProjectFolder 
+- **Upload a single file:**
+  ```powershell
+  odlg document.pdf
+  ```
 
-------------------------------
+- **Upload a path with spaces (no quotes required):**
+  ```powershell
+  odlg C:\Users\Username\Documents\My Project Files\video.mp4
+  ```
+
+- **Upload an entire directory (auto-compresses):**
+  ```powershell
+  odlg C:\Users\Username\Desktop\ProjectFolder
+  ```
+
+---
+
 ## ✨ Features
 
-* Pure Direct Links: Delivers raw links ready for curl, wget, scripts, or clean browser downloads.
-* Auto Clipboard Sync: Automatically copies generated URLs straight to your Windows clipboard (Ctrl + V).
-* No Quotes Needed: Reads multi-word file and folder paths seamlessly without quotation marks.
-* Folder Auto-Archiving: Automatically packages directories into .zip, .tar, or .tar.gz, uploads the archive, and removes the temporary file immediately after.
-* Interactive Terminal UI: Features a colorized title banner, an interactive menu, and clean status outputs.
-* Upload History: Logs file names, file sizes, timestamps, and generated links locally in history.json.
-* Configurable Backend: Supports switching between transfer.sh and 0x0.st.
+- **Pure Direct Links:** Delivers raw links ready for `curl`, `wget`, scripts, or clean browser downloads.
+- **Auto Clipboard Sync:** Automatically copies generated URLs straight to your Windows clipboard (`Ctrl + V`).
+- **No Quotes Needed:** Reads multi-word file and folder paths seamlessly without quotation marks.
+- **Folder Auto-Archiving:** Automatically packages directories into `.zip`, `.tar`, or `.tar.gz`, uploads the archive, and removes the temporary file immediately after.
+- **Interactive Terminal UI:** Features a colorized title banner, an interactive menu, and clean status outputs.
+- **Upload History:** Logs file names, file sizes, timestamps, and generated links locally in `history.json`.
+- **Configurable Backend:** Supports switching between `transfer.sh` and `0x0.st`.
 
-------------------------------
+---
+
 ## ⚙️ Configuration
-Your preferences are saved in config.json inside the tool's directory:
-json { "Backend": "transfer.sh", "AutoCopyClipboard": true, "ClearScreen": true, "DefaultArchive": "zip" } 
-You can change these values manually or interactively by running odlg -s.
-------------------------------
+
+Your preferences are saved in `config.json` inside the tool's directory:
+
+```json
+{
+  "Backend": "transfer.sh",
+  "AutoCopyClipboard": true,
+  "ClearScreen": true,
+  "DefaultArchive": "zip"
+}
+```
+
+You can change these values manually or interactively by running `odlg -s`.
+
+---
+
 ## 🛠️ Requirements
 
-* Operating System: Windows 10 or Windows 11
-* Shell: Windows PowerShell 5.1+ or PowerShell Core 7+
-* Network: Active internet connection
+- **Operating System:** Windows 10 or Windows 11
+- **Shell:** Windows PowerShell 5.1+ or PowerShell Core 7+
+- **Network:** Active internet connection
 
-------------------------------
+---
+
 ## 👤 Author
-Developed and maintained by [@Yuganshraj6](https://github.com/yugansh-dhir).
 
-
-<FollowUp>
-Would you like me to show you how to commit and push this **`README.md`** update directly via Git, or add an **uninstallation instruction** section to it?
-</FollowUp>
-
-
+Developed and maintained by **[@Yuganshraj6](https://github.com/Yuganshraj6)**.
